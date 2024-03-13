@@ -27,34 +27,48 @@ public class Cuenta {
 
     public boolean compruebaIban(String iban){
 
+        BigInteger xx = sacarDigitosControl(iban.substring(4));
+        String digitoControl = String.valueOf(xx);
 
-
-        return false;
+        if (digitoControl.equalsIgnoreCase(iban.substring(2,4))) {
+            return true;
+        }else {
+            return false;
+        }
     }
 
     public String generarIban(String entidad, String oficina, String dc, String cuenta){
-        BigInteger longitud = new BigInteger("0");
-        BigInteger xx = new BigInteger("0");
         String iban = "";
         if (entidad.length() == 4 && oficina.length() == 4 && dc.length() == 2 && cuenta.length() == 10) {
-            iban = entidad.concat(oficina).concat(dc).concat(cuenta) + "ES00";
+            iban = entidad.concat(oficina).concat(dc).concat(cuenta);
+            for(char c : iban.toCharArray()){
+                if ("AEIOU".indexOf(c) != -1) {
+                    return null;
+                }
+            }
+        }else{
+            return null;
         }
 
-        if (iban.contains("E") && iban.contains("S")) {
-                iban.replace("E","14");
-                iban.replace("S","28");
+        BigInteger xx = sacarDigitosControl(iban);
+        String digitoControl = String.valueOf(xx);
 
-                //sacarDigitosControl();
-            }
+        iban = "ES"+digitoControl.concat(iban);
 
         return iban;
+    }
+
+    public static BigInteger sacarDigitosControl(String iban){
+        iban += "ES00";
+
+        if (iban.contains("E") && iban.contains("S")) {
+            iban = iban.replace("E","14");
+            iban = iban.replace("S","28");
         }
 
-        /*public static int sacarDigitosControl(){
-            long ibanLong = Integer.parseInt(iban);
+        BigInteger longitud = new BigInteger(iban);
+        BigInteger xx = BigInteger.valueOf(98).subtract(longitud.mod(BigInteger.valueOf(97)));
 
-            longitud = BigInteger.valueOf(ibanLong);
-            xx = longitud.divide(BigInteger.valueOf(97));
-        }*/
-
+        return xx;
+    }
 }
